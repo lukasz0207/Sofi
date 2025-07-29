@@ -5,8 +5,22 @@ import threading
 import time
 import subprocess
 import os
-from scipy.io.wavfile import write
 import config
+
+# Import scipy z obsługą błędów
+try:
+    from scipy.io.wavfile import write
+except ImportError:
+    print("⚠️ Scipy nie jest zainstalowane. Używam alternatywnej metody zapisu audio.")
+    import wave
+    
+    def write(filename, rate, data):
+        """Alternatywna funkcja zapisu audio bez scipy"""
+        with wave.open(filename, 'wb') as wav_file:
+            wav_file.setnchannels(1)  # mono
+            wav_file.setsampwidth(2)  # 16-bit
+            wav_file.setframerate(rate)
+            wav_file.writeframes(data.tobytes())
 
 # Globalne zmienne
 audio_q = queue.Queue(maxsize=10)  # Ograniczenie rozmiaru kolejki
@@ -20,7 +34,7 @@ def get_default_microphone():
     
     devices = sd.query_devices()
     for i, device in enumerate(devices):
-        if device['max_input_channels'] > 0 and 'microphone' in device['name'].lower():
+        if device['max_input_channels'] > 6 and 'microphone' in device['name'].lower():
             print(f"🎤 Wykryto mikrofon: {device['name']} (ID: {i})")
             return i
     
