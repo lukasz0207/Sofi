@@ -1,45 +1,25 @@
-# main.py
 import tkinter as tk
 from threading import Thread
 import listener
 from speech.tts import speak
 
-# main.py
-
-from listener import start_listener
-import time
-
-def on_sofi_activated():
-    print("🌟 Sofi została wybudzona!")
-    # Tu w przyszłości: odpal pełne rozpoznanie pytania, GUI, TTS itd.
-
-if __name__ == "__main__":
-    print("🚀 Uruchamiam Sofi...")
-    start_listener(on_sofi_activated)
-
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        print("Zamykanie Sofi...")
-
-
 is_listening = False
 
 def on_wake():
     speak("Cześć Łukasz, słucham Cię 💗")
-    # Tu potem aktywujemy Whisper do dalszego STT
+    # Tu możesz dodać dalsze rozpoznawanie lub obsługę poleceń
 
 def toggle_listening():
     global is_listening
     if not is_listening:
         is_listening = True
         button.config(text="⏹️ Zatrzymaj nasłuch")
-        Thread(target=listener.listen_for_wake_word, args=(on_wake,), daemon=True).start()
+        listener.stop_threads = False
+        Thread(target=listener.start_listener, args=(on_wake,), daemon=True).start()
     else:
         is_listening = False
         button.config(text="🎙️ Włącz nasłuch")
-        # Można tu dodać zatrzymanie streamu
+        listener.stop_threads = True  # zatrzymanie nasłuchu
 
 root = tk.Tk()
 root.title("Sofi GUI")
